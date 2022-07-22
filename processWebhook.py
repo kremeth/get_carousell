@@ -1,47 +1,24 @@
 from selenium.webdriver.firefox.options import Options
 import flask
-import urllib.request
 import re
 import string
 import sys
 from collections import namedtuple as _namedtuple
 import pymysql
 import ssl
-import requests
 import time
 from selenium import webdriver
-import requests
-from bs4 import BeautifulSoup
 import re
-import itertools
 import pandas as pd
-import numpy as np
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver import ActionChains
-from selenium.webdriver.support import expected_conditions
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
-from lxml import etree
 from selenium.webdriver.common.by import By
 import pandas as pd
 from tqdm import tqdm
 import time
-from selenium.webdriver.common.keys import Keys
-import selenium
-import shutil
-import urllib.request
-import os
-import ast
-from webflowpy.Webflow import Webflow
-from webflowpy.WebflowResponse import WebflowResponse
-from webflowpy.utils import requests_retry_session
-import cloudscraper
 from selenium import webdriver
-from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.action_chains import ActionChains
 
 
 ssl._create_default_https_context = ssl._create_unverified_context
