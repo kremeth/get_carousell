@@ -19,6 +19,7 @@ from tqdm import tqdm
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+import os
 
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -47,13 +48,13 @@ def get_closest(name):
     #     f'https://www.vestiairecollective.com/search/?q={val}#sold=1', headers=headers)
 
     options = Options()
-
+    options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
     options.add_argument('--headless')
     options.add_argument('--window-size=1920,1080')
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36")
 
     driver = webdriver.Chrome(service=Service(
-        ChromeDriverManager().install()), options=options)
+        ChromeDriverManager().install()), options=options, executable_path=os.environ.get("CHROMEDRIVER_PATH"))
     driver.maximize_window()
     driver.get(f'https://www.carousell.sg/u/{name}/')
 
