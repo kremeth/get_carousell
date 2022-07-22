@@ -1,1 +1,1 @@
-web: gunicorn processWebhook:app --log-file - --timeout 10
+web: gunicorn processWebhook:app --log-file -
