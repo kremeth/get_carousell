@@ -67,13 +67,13 @@ def get_closest(name):
     driver.get(f'https://www.carousell.sg/u/{name}/')
 
 
-options = Options()
-options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-options.add_argument("--headless")
-options.add_argument("--disable-dev-shm-usage")
-options.add_argument("--no-sandbox")
-options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36")
-driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=options)
+# options = Options()
+# options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+# options.add_argument("--headless")
+# options.add_argument("--disable-dev-shm-usage")
+# options.add_argument("--no-sandbox")
+# options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36")
+# driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=options)
 
 
 
