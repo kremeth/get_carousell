@@ -645,7 +645,6 @@ def _calculate_ratio(matches, length):
 
 
     
-print(1)
 
 # scraper = cloudscraper.create_scraper()
 # textt = scraper.get(f'https://www.carousell.sg/u/diamondquilting/').text
