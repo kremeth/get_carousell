@@ -65,108 +65,140 @@ def home():
 @app.route('/<string:name>')
 def get_closest(name):
 
-    input_data = ' '.join(name.split('-'))
-    # return input_data
 
-    dd = {}
-    for val in brands:
-        dd[val] = token_set_ratio(input_data, val)
+    # r = requests.get(
+    #     f'https://www.vestiairecollective.com/search/?q={val}#sold=1', headers=headers)
 
-    brand = sorted(dd, key=dd.get, reverse=True)[0]
-    brand_stop = brands[brands.index(brand)-1]
+    options = Options()
 
-    dd = {}
-    for val in (brand + ' ' + comp.split(brand, 1)[1]).split(brand_stop)[0].split('|||'):
-        dd[val] = token_set_ratio(input_data, val)
+    options.add_argument('--headless')
+    options.add_argument('--window-size=1920,1080')
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36")
 
-    return sorted(dd, key=dd.get, reverse=True)[0]
-
-
-@app.route('/<string:name>/item_sku_long')
-def get_sku_long(name):
-    # value = get_closest(name).replace('  ', ' ')
-    value = get_closest(name)
-    cursor.execute(
-        f'SELECT item_sku_long FROM stylebase.Items WHERE reference_field = "{str(value)}";')
-    return cursor.fetchall()[0][0]
+    driver = webdriver.Chrome(service=Service(
+        ChromeDriverManager().install()), options=options)
+    driver.maximize_window()
+    driver.get(f'https://www.carousell.sg/u/{name}/')
 
 
-@app.route('/<string:name>/brand')
-def get_brand(name):
-    sku_long = get_sku_long(name)
-    brand_code = sku_long.split('.')[1]
-    print(brand_code)
-    cursor.execute(
-        f'SELECT brand_name FROM stylebase.Brands WHERE brand_code = "{brand_code}";')
-    return cursor.fetchall()[0][0]
+
+    # TODO: delete after
+
+    # options = Options()
+    # options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36")
+
+    # driver = webdriver.Chrome(service=Service(
+    #     ChromeDriverManager().install()), options=options)
+    # driver.maximize_window()
+
+    # driver.get('https://www.carousell.sg/p/🖤-chanel-vintage-medium-cf-classic-flap-bag-black-25cm-25-cm-24k-ghw-gold-hardware-small-jumbo-mini-caviar-23cm-23-1170217760/?t-id=uWeXsJ6KXZ_1658515078357&t-referrer_request_id=V0lIz_d7Mk18P2VH&t-tap_index=0')
 
 
-@app.route('/<string:name>/model')
-def get_model(name):
-    sku_long = get_sku_long(name)
-    model_code = sku_long.split('.')[2]
-    cursor.execute(
-        f'SELECT model_name FROM stylebase.Models WHERE model_code = "{model_code}";')
-    return cursor.fetchall()[0][0]
+
+    # driver = webdriver.Chrome(service=Service(
+    #     ChromeDriverManager().install()))
+    # driver.get(f'https://www.carousell.sg/u/diamondquilting/')
+    # Click the button
 
 
-@app.route('/<string:name>/model_image')
-def get_model_img(name):
-    sku_long = get_sku_long(name)
-    model_code = sku_long.split('.')[2]
-    cursor.execute(
-        f'SELECT model_img FROM stylebase.Models WHERE model_code = "{model_code}";')
-    return cursor.fetchall()[0][0]
-
-
-@app.route('/<string:name>/material')
-def get_material(name):
-    sku_long = get_sku_long(name)
-    material_code = sku_long.split('.')[3]
-    cursor.execute(
-        f'SELECT material FROM stylebase.Materials WHERE material_code = "{material_code}";')
-    return cursor.fetchall()[0][0]
-
-
-@app.route('/<string:name>/material_image')
-def get_material_img(name):
-    sku_long = get_sku_long(name)
-    material_code = sku_long.split('.')[3]
-    cursor.execute(
-        f'SELECT material_img FROM stylebase.Material_Images WHERE material_code = "{material_code}";')
-    return cursor.fetchall()[0][0]
-
-
-@app.route('/<string:name>/min_price')
-def get_price(name):
-    sku_long = get_sku_long(name)
-    cursor.execute(
-        f"SELECT MIN(price_sgd) FROM stylebase.Listings WHERE listing_status = 'LIVE' AND item_sku_long = '{sku_long}';")
-    try:
-        result = str(cursor.fetchall()[0][0])
-        if result == 'None':
-            return 'Not in Stock'
-        else:
-            return result
-    except:
-        return 'Not in Stock'
-
-
-@app.route('/<string:name>/size')
-def get_size(name):
-    sku_long = get_sku_long(name)
-    size_code = sku_long.split('.')[4]
-    if size_code == 'N':
-        return 'Not Applicable'
-    elif size_code == 'ON':
-        return 'One Size'
-    else:
-        cursor.execute(
-            f'SELECT size_name FROM stylebase.Sizes WHERE size_code = "{size_code}";')
+    while True:
         try:
-            return cursor.fetchall()[0][0]
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            # time.sleep(5)
+            btn = [val for val in driver.find_elements(
+                By.CSS_SELECTOR, 'button') if val.text == 'View more'][0]
+            btn.click()
+            time.sleep(2)
+            # driver.execute_script("arguments[0].click();", btn)
+            # btn.find_element(By.XPATH, '..').click()
+            # print(len(driver.find_elements(By.CSS_SELECTOR, 'a')))
+            # time.sleep(2)
+            # driver.implicitly_wait(1)
         except IndexError:
-            return ''
+            # links = [val.get_attribute('href') for val in driver.find_elements(By.CSS_SELECTOR, 'a') if '/p/' in val.get_attribute('href')]
+            # Filter out all the products
+            links = [val for val in driver.find_elements(By.CSS_SELECTOR, 'a') if '/p/' in val.get_attribute('href')]
+            # Get only the items that are not sold yet
+            links = [val for val in links if 'SOLD' not in val.text]
+            # 
+            # links = list(itertools.chain.from_iterable([[val.get_attribute('href') for val in links if ele in val.text] for ele in brands]))
+            links = [val.get_attribute('href') for val in links]
+            break
+
+
+    rows = []
+    for link in tqdm(links):
+        driver.get(link)
+        # time.sleep(5)
+        title = driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[1]/p').text
+        price = driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[1]/section/div/div/div/div/div/div/h2').text
+        # description = driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[2]/section').text
+        # category = ''
+        # try:
+        #     category = description.split('\n')[description.split('\n').index('Type')+1]
+        # except:
+        #     pass
+        # try:
+        #     brand = description.split('\n')[description.split('\n').index('Brand')+1]
+        # except:
+        #     brand = ''
+        # try:
+        #     condition = driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[1]/div[2]/section/div/div/div').text.split('\nMailing')[0]
+        # except:
+        #     pass
+        text_listing = [val.text for val in driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[2]/section').find_elements(By.CSS_SELECTOR, 'p')]
+        try:
+            brand = text_listing[text_listing.index('Brand')+1]
+        except:
+            brand = ''
+        try:
+            model = text_listing[text_listing.index('Model')+1]
+        except:
+            model = ''
+        try:
+            category = text_listing[text_listing.index('Type')+1]
+        except:
+            category = ''
+        try:
+            accessories = text_listing[text_listing.index('Accessories')+1]
+        except:
+            accessories = ''
+        try:
+            description = text_listing[text_listing.index('Description')+1]
+        except:
+            description = ''
+        try:
+            images = '; '.join([val.get_attribute('src') for val in driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/section/div/div/div').find_elements(By.CSS_SELECTOR, 'img')])
+        except:
+            images = ''
+        
+
+        row = {
+            'title': title,
+            'price': price,
+            'brand': brand,
+            'model': model,
+            'category': category,
+            'accessories': accessories,
+            'description': description,
+            'images': images
+        }
+
+        rows.append(row)
+
+        pd.DataFrame(rows).to_csv('/Users/mathieukremeth/Desktop/dcarousell_extract.csv')
+
+        data = pd.read_csv('/Users/mathieukremeth/Desktop/dcarousell_extract.csv', index_col=0)
+
+        # Filter by brands
+        data = data[data['brand'].isin(brands)]
+
+        # Filter by category
+
+        return data.to_json()
+
+
+
 
 
 brands = ['Versace',
@@ -479,29 +511,20 @@ def _calculate_ratio(matches, length):
     return 1.0
 
 
-Match = _namedtuple('Match', 'a b size')
+# Match = _namedtuple('Match', 'a b size')
 
 
-name = 'Saint Laurent LouLou Top Handle Bag Matelasse Chevron Leather Medium Black'
-val = '%20'.join(name.split(' '))
+# name = 'Saint Laurent LouLou Top Handle Bag Matelasse Chevron Leather Medium Black'
+# val = '%20'.join(name.split(' '))
 
 
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'}
+# headers = {
+#     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'}
 
 # r = requests.get(
 #     f'https://www.vestiairecollective.com/search/?q={val}#sold=1', headers=headers)
 
-options = Options()
 
-options.add_argument('--headless')
-options.add_argument('--window-size=1920,1080')
-options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36")
-
-driver = webdriver.Chrome(service=Service(
-    ChromeDriverManager().install()), options=options)
-driver.maximize_window()
-driver.get('https://www.carousell.sg/u/diamondquilting/')
 
 
 
@@ -524,101 +547,101 @@ driver.get('https://www.carousell.sg/u/diamondquilting/')
 # Click the button
 
 
-while True:
-    try:
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        # time.sleep(5)
-        btn = [val for val in driver.find_elements(
-            By.CSS_SELECTOR, 'button') if val.text == 'View more'][0]
-        btn.click()
-        time.sleep(2)
-        # driver.execute_script("arguments[0].click();", btn)
-        # btn.find_element(By.XPATH, '..').click()
-        # print(len(driver.find_elements(By.CSS_SELECTOR, 'a')))
-        # time.sleep(2)
-        # driver.implicitly_wait(1)
-    except IndexError:
-        # links = [val.get_attribute('href') for val in driver.find_elements(By.CSS_SELECTOR, 'a') if '/p/' in val.get_attribute('href')]
-        # Filter out all the products
-        links = [val for val in driver.find_elements(By.CSS_SELECTOR, 'a') if '/p/' in val.get_attribute('href')]
-        # Get only the items that are not sold yet
-        links = [val for val in links if 'SOLD' not in val.text]
-        # 
-        # links = list(itertools.chain.from_iterable([[val.get_attribute('href') for val in links if ele in val.text] for ele in brands]))
-        links = [val.get_attribute('href') for val in links]
-        break
+# while True:
+#     try:
+#         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+#         # time.sleep(5)
+#         btn = [val for val in driver.find_elements(
+#             By.CSS_SELECTOR, 'button') if val.text == 'View more'][0]
+#         btn.click()
+#         time.sleep(2)
+#         # driver.execute_script("arguments[0].click();", btn)
+#         # btn.find_element(By.XPATH, '..').click()
+#         # print(len(driver.find_elements(By.CSS_SELECTOR, 'a')))
+#         # time.sleep(2)
+#         # driver.implicitly_wait(1)
+#     except IndexError:
+#         # links = [val.get_attribute('href') for val in driver.find_elements(By.CSS_SELECTOR, 'a') if '/p/' in val.get_attribute('href')]
+#         # Filter out all the products
+#         links = [val for val in driver.find_elements(By.CSS_SELECTOR, 'a') if '/p/' in val.get_attribute('href')]
+#         # Get only the items that are not sold yet
+#         links = [val for val in links if 'SOLD' not in val.text]
+#         # 
+#         # links = list(itertools.chain.from_iterable([[val.get_attribute('href') for val in links if ele in val.text] for ele in brands]))
+#         links = [val.get_attribute('href') for val in links]
+#         break
 
 
-rows = []
-for link in tqdm(links):
-    driver.get(link)
-    # time.sleep(5)
-    title = driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[1]/p').text
-    price = driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[1]/section/div/div/div/div/div/div/h2').text
-    # description = driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[2]/section').text
-    # category = ''
-    # try:
-    #     category = description.split('\n')[description.split('\n').index('Type')+1]
-    # except:
-    #     pass
-    # try:
-    #     brand = description.split('\n')[description.split('\n').index('Brand')+1]
-    # except:
-    #     brand = ''
-    # try:
-    #     condition = driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[1]/div[2]/section/div/div/div').text.split('\nMailing')[0]
-    # except:
-    #     pass
-    text_listing = [val.text for val in driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[2]/section').find_elements(By.CSS_SELECTOR, 'p')]
-    try:
-        brand = text_listing[text_listing.index('Brand')+1]
-    except:
-        brand = ''
-    try:
-        model = text_listing[text_listing.index('Model')+1]
-    except:
-        model = ''
-    try:
-        category = text_listing[text_listing.index('Type')+1]
-    except:
-        category = ''
-    try:
-        accessories = text_listing[text_listing.index('Accessories')+1]
-    except:
-        accessories = ''
-    try:
-        description = text_listing[text_listing.index('Description')+1]
-    except:
-        description = ''
-    try:
-        images = '; '.join([val.get_attribute('src') for val in driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/section/div/div/div').find_elements(By.CSS_SELECTOR, 'img')])
-    except:
-        images = ''
+# rows = []
+# for link in tqdm(links):
+#     driver.get(link)
+#     # time.sleep(5)
+#     title = driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[1]/p').text
+#     price = driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[1]/section/div/div/div/div/div/div/h2').text
+#     # description = driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[2]/section').text
+#     # category = ''
+#     # try:
+#     #     category = description.split('\n')[description.split('\n').index('Type')+1]
+#     # except:
+#     #     pass
+#     # try:
+#     #     brand = description.split('\n')[description.split('\n').index('Brand')+1]
+#     # except:
+#     #     brand = ''
+#     # try:
+#     #     condition = driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[1]/div[2]/section/div/div/div').text.split('\nMailing')[0]
+#     # except:
+#     #     pass
+#     text_listing = [val.text for val in driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[2]/section').find_elements(By.CSS_SELECTOR, 'p')]
+#     try:
+#         brand = text_listing[text_listing.index('Brand')+1]
+#     except:
+#         brand = ''
+#     try:
+#         model = text_listing[text_listing.index('Model')+1]
+#     except:
+#         model = ''
+#     try:
+#         category = text_listing[text_listing.index('Type')+1]
+#     except:
+#         category = ''
+#     try:
+#         accessories = text_listing[text_listing.index('Accessories')+1]
+#     except:
+#         accessories = ''
+#     try:
+#         description = text_listing[text_listing.index('Description')+1]
+#     except:
+#         description = ''
+#     try:
+#         images = '; '.join([val.get_attribute('src') for val in driver.find_element(By.XPATH, '/html/body/div[1]/div/div[3]/section/div/div/div').find_elements(By.CSS_SELECTOR, 'img')])
+#     except:
+#         images = ''
     
 
-    row = {
-        'title': title,
-        'price': price,
-        'brand': brand,
-        'model': model,
-        'category': category,
-        'accessories': accessories,
-        'description': description,
-        'images': images
-    }
+#     row = {
+#         'title': title,
+#         'price': price,
+#         'brand': brand,
+#         'model': model,
+#         'category': category,
+#         'accessories': accessories,
+#         'description': description,
+#         'images': images
+#     }
 
-    rows.append(row)
+#     rows.append(row)
 
-    pd.DataFrame(rows).to_csv('/Users/mathieukremeth/Desktop/dcarousell_extract.csv')
+#     pd.DataFrame(rows).to_csv('/Users/mathieukremeth/Desktop/dcarousell_extract.csv')
 
-    data = pd.read_csv('/Users/mathieukremeth/Desktop/dcarousell_extract.csv', index_col=0)
+#     data = pd.read_csv('/Users/mathieukremeth/Desktop/dcarousell_extract.csv', index_col=0)
 
-    # Filter by brands
-    data = data[data['brand'].isin(brands)]
+#     # Filter by brands
+#     data = data[data['brand'].isin(brands)]
 
-    # Filter by category
+#     # Filter by category
 
-    return data.to_json()
+#     return data.to_json()
 
 
     
