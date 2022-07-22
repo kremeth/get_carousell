@@ -24,3 +24,4 @@ selenium==4.1.5
 pandas==1.4.2
 webdriver-manager==3.5.4
 tqdm==4.64.0
+rq==1.10.1
